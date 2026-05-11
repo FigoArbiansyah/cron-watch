@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="scheduled_actions_tracker.CronDashboard" owl="1">
+        <div class="o_cron_dashboard p-4">
+            <!-- Header Section -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h2 class="fw-bold text-dark">CronWatch Analytics</h2>
+                    <p class="text-muted">Monitor your scheduled actions performance and health.</p>
+                </div>
+            </div>
+
+            <!-- Summary Widgets -->
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 bg-primary text-white dashboard-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title mb-0">Total Runs Today</h6>
+                                    <h2 class="fw-bold mb-0 mt-2" t-esc="state.stats.summary.total_runs"/>
+                                </div>
+                                <i class="fa fa-play-circle fa-3x opacity-50"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 bg-success text-white dashboard-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title mb-0">Success Rate</h6>
+                                    <h2 class="fw-bold mb-0 mt-2"><t t-esc="state.stats.summary.success_rate"/>%</h2>
+                                </div>
+                                <i class="fa fa-check-circle fa-3x opacity-50"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0 bg-info text-white dashboard-card">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="card-title mb-0">Slowest Job Today</h6>
+                                    <h4 class="fw-bold mb-0 mt-2 text-truncate" style="max-width: 200px;" t-att-title="state.stats.summary.slowest_job_name">
+                                        <t t-esc="state.stats.summary.slowest_job_name"/>
+                                    </h4>
+                                    <small class="opacity-75">Duration: <t t-esc="state.stats.summary.slowest_job_duration"/></small>
+                                </div>
+                                <i class="fa fa-clock-o fa-3x opacity-50"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="row">
+                <!-- Trend Chart -->
+                <div class="col-lg-8 mb-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h5 class="card-title mb-0 fw-bold">Execution Trend (Last 7 Days)</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas t-ref="trendChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Heatmap Chart -->
+                <div class="col-lg-4 mb-4">
+                    <div class="card shadow-sm border-0 h-100">
+                        <div class="card-header bg-white border-0 py-3">
+                            <h5 class="card-title mb-0 fw-bold">Failure Distribution (Hour)</h5>
+                        </div>
+                        <div class="card-body">
+                            <canvas t-ref="heatmapChart" height="250"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -5,7 +5,21 @@
     <menuitem id="menu_sat_root"
               name="CronWatch"
               sequence="100"
-              web_icon="fa fa-binoculars"
+              web_icon="scheduled_actions_tracker,static/src/img/icon.png"
+              groups="base.group_system"/>
+
+    <!-- Client Action for Dashboard -->
+    <record id="action_cron_dashboard" model="ir.actions.client">
+        <field name="name">Dashboard</field>
+        <field name="tag">cron_dashboard_client_action</field>
+    </record>
+
+    <!-- Dashboard Menu -->
+    <menuitem id="menu_sat_dashboard"
+              name="Dashboard"
+              parent="menu_sat_root"
+              action="action_cron_dashboard"
+              sequence="5"
               groups="base.group_system"/>
 
     <!-- Scheduled Actions (with tracking config) -->

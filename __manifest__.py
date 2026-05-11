@@ -28,6 +28,8 @@ Features:
     'assets': {
         'web.assets_backend': [
             'scheduled_actions_tracker/static/src/css/tracker.css',
+            'scheduled_actions_tracker/static/src/js/dashboard.js',
+            'scheduled_actions_tracker/static/src/xml/dashboard_templates.xml',
         ],
     },
     'images': [],

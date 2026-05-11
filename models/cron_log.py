@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from dateutil.relativedelta import relativedelta
 from odoo import models, fields, api
 
 _logger = logging.getLogger(__name__)
@@ -135,4 +136,81 @@ class CronLog(models.Model):
                 'scheduled_actions_tracker.cron_log_error_form_view'
             ).id,
             'target': 'new',
+        }
+
+    @api.model
+    def get_dashboard_stats(self):
+        """Fetch statistics for the dashboard."""
+        today = fields.Date.today()
+        start_of_day = fields.Datetime.to_string(
+            fields.Datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+        )
+
+        # 1. Summary Widgets
+        runs_today = self.search_count([('start_datetime', '>=', start_of_day)])
+        success_today = self.search_count([
+            ('start_datetime', '>=', start_of_day),
+            ('state', '=', 'success')
+        ])
+        success_rate = (success_today / runs_today * 100) if runs_today > 0 else 0
+
+        slowest_job = self.search([
+            ('start_datetime', '>=', start_of_day),
+            ('state', '!=', 'running')
+        ], order='duration desc', limit=1)
+
+        # 2. Execution Trend (Last 7 Days)
+        trend_data = []
+        for i in range(6, -1, -1):
+            date = today - relativedelta(days=i)
+            date_str = fields.Date.to_string(date)
+            
+            success_count = self.search_count([
+                ('start_datetime', '>=', date_str + ' 00:00:00'),
+                ('start_datetime', '<=', date_str + ' 23:59:59'),
+                ('state', '=', 'success')
+            ])
+            failed_count = self.search_count([
+                ('start_datetime', '>=', date_str + ' 00:00:00'),
+                ('start_datetime', '<=', date_str + ' 23:59:59'),
+                ('state', '=', 'failed')
+            ])
+            
+            trend_data.append({
+                'date': date.strftime('%a, %d %b'),
+                'success': success_count,
+                'failed': failed_count,
+            })
+
+        # 3. Failure Heatmap (Last 30 Days, grouped by hour)
+        heatmap_data = []
+        last_30_days = today - relativedelta(days=30)
+        failures = self.search([
+            ('start_datetime', '>=', fields.Date.to_string(last_30_days)),
+            ('state', '=', 'failed')
+        ])
+        
+        hour_counts = [0] * 24
+        for fail in failures:
+            # We use UTC hour or local? Odoo fields are UTC. 
+            # For heatmap, local hour is usually better if the user is in a specific timezone.
+            # But let's stick to UTC for now or use user's TZ if possible.
+            hour = fail.start_datetime.hour 
+            hour_counts[hour] += 1
+            
+        for h in range(24):
+            heatmap_data.append({
+                'hour': f"{h:02d}:00",
+                'count': hour_counts[h]
+            })
+
+        return {
+            'summary': {
+                'total_runs': runs_today,
+                'success_rate': round(success_rate, 1),
+                'slowest_job_name': slowest_job.cron_id.name if slowest_job else 'None',
+                'slowest_job_duration': slowest_job.duration_human if slowest_job else '0s',
+            },
+            'trend': trend_data,
+            'heatmap': heatmap_data,
         }
