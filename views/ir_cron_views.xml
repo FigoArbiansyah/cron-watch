@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data noupdate="0">
+    <!-- =========================================================================
+         IR.CRON - Form View Extension
+    ========================================================================= -->
+    <record id="ir_cron_form_view_tracker" model="ir.ui.view">
+        <field name="name">ir.cron.form.tracker</field>
+        <field name="model">ir.cron</field>
+        <field name="inherit_id" ref="base.ir_cron_view_form"/>
+        <field name="arch" type="xml">
+
+            <!-- Smart Buttons -->
+            <xpath expr="//sheet/*[1]" position="before">
+                <field name="enable_tracking" invisible="1"/>
+                <div class="oe_button_box" name="button_box">
+                    <button name="action_view_logs"
+                            type="object"
+                            class="oe_stat_button"
+                            icon="fa-history"
+                            invisible="not enable_tracking">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value">
+                                <field name="log_count"/>
+                            </span>
+                            <span class="o_stat_text">Executions</span>
+                        </div>
+                    </button>
+                    <button class="oe_stat_button"
+                            icon="fa-check-circle-o"
+                            invisible="not enable_tracking">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value text-success">
+                                <field name="success_count"/>
+                            </span>
+                            <span class="o_stat_text">Successes</span>
+                        </div>
+                    </button>
+                    <button class="oe_stat_button"
+                            icon="fa-times-circle-o"
+                            invisible="not enable_tracking">
+                        <div class="o_field_widget o_stat_info">
+                            <span class="o_stat_value text-danger">
+                                <field name="failure_count"/>
+                            </span>
+                            <span class="o_stat_text">Failures</span>
+                        </div>
+                    </button>
+                </div>
+            </xpath>
+
+            <!-- Tracking Tab — inserted after the last existing page -->
+            <xpath expr="//notebook" position="inside">
+                <page string="Execution Tracking" name="sat_tracking" groups="base.group_system">
+                    <div class="alert alert-info py-2 mb-3" role="alert" invisible="enable_tracking">
+                        <i class="fa fa-info-circle me-2"/> 
+                        Enable <strong>Execution Tracking</strong> below to start monitoring this job's performance and errors.
+                    </div>
+
+                    <group>
+                        <group string="Configuration" name="config">
+                            <field name="enable_tracking" widget="boolean_toggle"/>
+                            <field name="log_retention_days"
+                                    invisible="not enable_tracking"
+                                    required="enable_tracking"
+                                    placeholder="e.g. 30"/>
+                        </group>
+                        <group string="Last Performance"
+                               invisible="not enable_tracking"
+                               name="stats">
+                            <field name="last_execution" readonly="1" string="Last Run At"/>
+                            <field name="last_status"
+                                   readonly="1"
+                                   widget="badge"
+                                   decoration-danger="last_status == 'failed'"
+                                   decoration-success="last_status == 'success'"
+                                   decoration-warning="last_status == 'running'"/>
+                            <field name="avg_duration" readonly="1" string="Avg Duration" widget="float_time"/>
+                        </group>
+                    </group>
+
+                    <div class="sat_action_row mt-4" invisible="not enable_tracking">
+                        <button name="action_view_logs"
+                                type="object"
+                                string="Open All Execution Logs"
+                                class="btn btn-primary"
+                                icon="fa-list"/>
+                        <button name="action_purge_old_logs"
+                                type="object"
+                                string="Purge Logs Manually"
+                                class="btn btn-outline-danger"
+                                icon="fa-trash-o"
+                                confirm="This will permanently delete logs older than the retention period. Proceed?"
+                                invisible="log_retention_days == 0"/>
+                    </div>
+
+                    <div invisible="log_count == 0" class="mt-5">
+                        <separator string="Quick Summary" class="fw-bold"/>
+                        <p class="text-muted small">
+                            Tracked executions provide visibility into performance bottlenecks and silent failures.
+                        </p>
+                    </div>
+                </page>
+            </xpath>
+
+        </field>
+    </record>
+
+    <!-- =========================================================================
+         IR.CRON - Tree View Extension (add tracking columns)
+    ========================================================================= -->
+    <record id="ir_cron_tree_view_tracker" model="ir.ui.view">
+        <field name="name">ir.cron.tree.tracker</field>
+        <field name="model">ir.cron</field>
+        <field name="inherit_id" ref="base.ir_cron_view_tree"/>
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='nextcall']" position="before">
+                <field name="last_execution" string="Last Run" optional="show" widget="remaining_days"/>
+                <field name="last_status" 
+                       string="Last Status"
+                       widget="badge"
+                       decoration-danger="last_status == 'failed'"
+                       decoration-success="last_status == 'success'"
+                       decoration-warning="last_status == 'running'"
+                       optional="show"/>
+            </xpath>
+            <xpath expr="//field[@name='active']" position="before">
+                <field name="enable_tracking" widget="boolean_toggle" optional="hide"/>
+                <field name="log_count" string="Logs" optional="hide" sum="Total Logs"/>
+            </xpath>
+        </field>
+    </record>
+
+    <!-- =========================================================================
+         IR.CRON - Dedicated "Tracked Actions" list action
+    ========================================================================= -->
+    <record id="action_ir_cron_tracker" model="ir.actions.act_window">
+        <field name="name">Scheduled Actions Tracking</field>
+        <field name="res_model">ir.cron</field>
+        <field name="view_mode">tree,form</field>
+        <field name="domain">[]</field>
+        <field name="context">{'search_default_all': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Monitor your Scheduled Actions performance.
+            </p>
+            <p>
+                Select a job and enable <strong>Execution Tracking</strong> to start collecting detailed runtime logs.
+            </p>
+        </field>
+    </record>
+
+</data>
+</odoo>

@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data noupdate="0">
+    <!-- =========================================================================
+         CRON LOG - List View
+    ========================================================================= -->
+    <record id="cron_log_tree_view" model="ir.ui.view">
+        <field name="name">cron.log.tree</field>
+        <field name="model">cron.log</field>
+        <field name="arch" type="xml">
+            <tree string="Execution Logs"
+                  create="false"
+                  edit="false"
+                  delete="true"
+                  decoration-danger="state == 'failed'"
+                  decoration-success="state == 'success'"
+                  decoration-warning="state == 'running'"
+                  default_order="start_datetime desc">
+                <field name="cron_id" string="Job Name" optional="show"/>
+                <field name="start_datetime" string="Started At" widget="datetime" optional="show"/>
+                <field name="duration_human" string="Duration" optional="show" class="fw-bold"/>
+                <field name="trigger_type" widget="badge" decoration-info="trigger_type == 'manual'" optional="show"/>
+                <field name="triggered_by" optional="hide"/>
+                <field name="state"
+                       widget="badge"
+                       decoration-danger="state == 'failed'"
+                       decoration-success="state == 'success'"
+                       decoration-warning="state == 'running'"/>
+                <field name="error_message" optional="show" string="Error Summary"/>
+                <button name="action_view_error"
+                        string="Traceback"
+                        type="object"
+                        icon="fa-bug"
+                        class="text-danger"
+                        invisible="state != 'failed'"/>
+            </tree>
+        </field>
+    </record>
+
+    <!-- =========================================================================
+         CRON LOG - Form View
+    ========================================================================= -->
+    <record id="cron_log_form_view" model="ir.ui.view">
+        <field name="name">cron.log.form</field>
+        <field name="model">cron.log</field>
+        <field name="arch" type="xml">
+            <form string="Execution Log" create="false" edit="false">
+                <header>
+                    <field name="state"
+                           widget="statusbar"
+                           statusbar_visible="running,success,failed"/>
+                </header>
+                <sheet>
+                    <div class="sat_header_banner" invisible="state != 'failed'">
+                        <span class="fa fa-exclamation-triangle"/> 
+                        <strong>Execution Error:</strong> <field name="error_message" nolabel="1"/>
+                    </div>
+
+                    <div class="oe_title">
+                        <label for="cron_id" string="Scheduled Action"/>
+                        <h1>
+                            <field name="cron_id" readonly="1" options="{'no_open': False}"/>
+                        </h1>
+                    </div>
+
+                    <group>
+                        <group string="Run Information" name="info">
+                            <field name="cron_model" readonly="1"/>
+                            <field name="trigger_type" readonly="1" widget="badge" decoration-info="trigger_type == 'manual'"/>
+                            <field name="triggered_by" readonly="1"
+                                    invisible="trigger_type != 'manual'"/>
+                        </group>
+                        <group string="Timing &amp; Performance" name="performance">
+                            <field name="start_datetime" readonly="1" string="Started At"/>
+                            <field name="end_datetime" readonly="1" string="Finished At"/>
+                            <field name="duration_human" readonly="1" string="Total Duration" class="fw-bold"/>
+                            <field name="duration" readonly="1" string="Duration (seconds)" groups="base.group_no_one"/>
+                        </group>
+                    </group>
+
+                    <!-- Error details - shown only on failure -->
+                    <notebook invisible="state != 'failed'">
+                        <page string="Traceback Details" name="traceback">
+                            <field name="error_traceback"
+                                   readonly="1"
+                                   widget="text"
+                                   nolabel="1"
+                                   class="sat_traceback"/>
+                            <p class="text-muted mt-2">
+                                <i class="fa fa-info-circle me-1"/> 
+                                The traceback above contains the full technical details of why this job failed.
+                            </p>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================================================================
+         CRON LOG - Error Dialog (popup)
+    ========================================================================= -->
+    <record id="cron_log_error_form_view" model="ir.ui.view">
+        <field name="name">cron.log.error.form</field>
+        <field name="model">cron.log</field>
+        <field name="priority">20</field>
+        <field name="arch" type="xml">
+            <form string="Execution Error" create="false" edit="false">
+                <sheet>
+                    <div class="sat_header_banner">
+                        <span class="fa fa-bug"/> Technical Traceback
+                    </div>
+                    <group>
+                        <group>
+                            <field name="cron_id" readonly="1" string="Action"/>
+                            <field name="start_datetime" readonly="1" string="Execution Date"/>
+                        </group>
+                        <group>
+                            <field name="state" readonly="1" widget="badge" decoration-danger="1"/>
+                            <field name="duration_human" readonly="1" string="Duration"/>
+                        </group>
+                    </group>
+                    <separator string="Technical Details" class="mt-4"/>
+                    <field name="error_traceback"
+                           readonly="1"
+                           widget="text"
+                           nolabel="1"
+                           class="sat_traceback"/>
+                </sheet>
+                <footer>
+                    <button string="Close" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <!-- =========================================================================
+         CRON LOG - Search View
+    ========================================================================= -->
+    <record id="cron_log_search_view" model="ir.ui.view">
+        <field name="name">cron.log.search</field>
+        <field name="model">cron.log</field>
+        <field name="arch" type="xml">
+            <search string="Search Execution Logs">
+                <field name="cron_id" string="Action Name"/>
+                <field name="triggered_by" string="User"/>
+                <field name="error_message" string="Error Content"/>
+
+                <filter name="filter_failed"
+                        string="Errors Only"
+                        domain="[('state', '=', 'failed')]"/>
+                <filter name="filter_success"
+                        string="Success Only"
+                        domain="[('state', '=', 'success')]"/>
+                <filter name="filter_running"
+                        string="Currently Running"
+                        domain="[('state', '=', 'running')]"/>
+                
+                <separator/>
+                <filter name="filter_manual"
+                        string="Manual Runs"
+                        domain="[('trigger_type', '=', 'manual')]"/>
+                <filter name="filter_scheduled"
+                        string="Scheduled Runs"
+                        domain="[('trigger_type', '=', 'scheduled')]"/>
+                
+                <separator/>
+                <filter name="filter_today"
+                        string="Today"
+                        domain="[('start_datetime', '&gt;=', (context_today()).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter name="filter_yesterday"
+                        string="Yesterday"
+                        domain="[('start_datetime', '&gt;=', (context_today() - relativedelta(days=1)).strftime('%Y-%m-%d 00:00:00')), ('start_datetime', '&lt;', (context_today()).strftime('%Y-%m-%d 00:00:00'))]"/>
+                <filter name="filter_last7"
+                        string="Last 7 Days"
+                        domain="[('start_datetime', '&gt;=', (context_today() - relativedelta(days=7)).strftime('%Y-%m-%d 00:00:00'))]"/>
+
+                <group expand="0" string="Analyze By">
+                    <filter name="group_cron"
+                            string="Scheduled Action"
+                            context="{'group_by': 'cron_id'}"/>
+                    <filter name="group_state"
+                            string="Status"
+                            context="{'group_by': 'state'}"/>
+                    <filter name="group_trigger"
+                            string="Trigger Source"
+                            context="{'group_by': 'trigger_type'}"/>
+                    <filter name="group_date"
+                            string="Date"
+                            context="{'group_by': 'start_datetime:day'}"/>
+                </group>
+            </search>
+        </field>
+    </record>
+
+    <!-- =========================================================================
+         CRON LOG - Action
+    ========================================================================= -->
+    <record id="action_cron_log" model="ir.actions.act_window">
+        <field name="name">Execution Logs</field>
+        <field name="res_model">cron.log</field>
+        <field name="view_mode">tree,form</field>
+        <field name="search_view_id" ref="cron_log_search_view"/>
+        <field name="context">{'search_default_filter_failed': 1}</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                No logs recorded yet.
+            </p>
+            <p>
+                To start tracking a job, go to <strong>Scheduled Actions Tracking</strong>, 
+                select a record, and enable <strong>Execution Tracking</strong>.
+            </p>
+        </field>
+    </record>
+
+</data>
+</odoo>

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+<data noupdate="0">
+    <!-- Root menu under Technical -->
+    <menuitem id="menu_sat_root"
+              name="Scheduled Actions Tracker"
+              sequence="100"
+              web_icon="scheduled_actions_tracker,static/src/img/icon.png"
+              groups="base.group_system"/>
+
+    <!-- Scheduled Actions (with tracking config) -->
+    <menuitem id="menu_sat_actions"
+              name="Scheduled Actions"
+              parent="menu_sat_root"
+              action="action_ir_cron_tracker"
+              sequence="10"
+              groups="base.group_system"/>
+
+    <!-- Execution Logs -->
+    <menuitem id="menu_sat_logs"
+              name="Execution Logs"
+              parent="menu_sat_root"
+              action="action_cron_log"
+              sequence="20"
+              groups="base.group_system"/>
+</data>
+</odoo>
