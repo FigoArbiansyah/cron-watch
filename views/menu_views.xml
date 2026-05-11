@@ -3,9 +3,9 @@
 <data noupdate="0">
     <!-- Root menu under Technical -->
     <menuitem id="menu_sat_root"
-              name="Scheduled Actions Tracker"
+              name="CronWatch"
               sequence="100"
-              web_icon="scheduled_actions_tracker,static/src/img/icon.png"
+              web_icon="fa fa-binoculars"
               groups="base.group_system"/>
 
     <!-- Scheduled Actions (with tracking config) -->

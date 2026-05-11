@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 {
-    'name': 'Scheduled Actions Tracker',
+    'name': 'CronWatch',
     'version': '17.0.1.0.0',
     'summary': 'Track and monitor scheduled actions (cron jobs) execution with detailed logs',
     'description': """

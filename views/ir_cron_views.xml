@@ -135,7 +135,7 @@
          IR.CRON - Dedicated "Tracked Actions" list action
     ========================================================================= -->
     <record id="action_ir_cron_tracker" model="ir.actions.act_window">
-        <field name="name">Scheduled Actions Tracking</field>
+        <field name="name">CronWatch Monitoring</field>
         <field name="res_model">ir.cron</field>
         <field name="view_mode">tree,form</field>
         <field name="domain">[]</field>
